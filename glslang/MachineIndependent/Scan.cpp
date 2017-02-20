@@ -1105,7 +1105,7 @@ int TScanContext::tokenizeIdentifier()
         afterType = true;
         if (parseContext.symbolTable.atBuiltInLevel())
             return keyword;
-        else if (parseContext.version < 130 && (parseContext.profile == EEsProfile || !parseContext.extensionTurnedOn(E_GL_EXT_texture_array))) {
+        else if (parseContext.version < 130 && ((parseContext.profile == EEsProfile && keyword != SAMPLER2DARRAY) || !parseContext.extensionTurnedOn(E_GL_EXT_texture_array))) {
             if (parseContext.forwardCompatible)
                 parseContext.warn(loc, "using future keyword", tokenText, "");
 

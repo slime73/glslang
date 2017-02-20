@@ -243,6 +243,7 @@ void TParseVersions::getPreamble(std::string& preamble)
         preamble =
             "#define GL_ES 1\n"
             "#define GL_FRAGMENT_PRECISION_HIGH 1\n"
+            "#define GL_EXT_texture_array 1\n"
             "#define GL_OES_texture_3D 1\n"
             "#define GL_OES_standard_derivatives 1\n"
             "#define GL_EXT_frag_depth 1\n"

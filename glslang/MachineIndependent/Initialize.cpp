@@ -1292,6 +1292,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
                 "vec4 textureCube(samplerCube, vec3);"
 
+                "vec4 texture2DArray(sampler2DArray, vec3);" // GL_EXT_texture_array
+
                 "\n");
         }
     }
@@ -1318,7 +1320,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 shadow2DRectProj(sampler2DRectShadow, vec4);" // GL_ARB_texture_rectangle, caught by keyword check
 
                 "vec4 texture1DArray(sampler1DArray, vec2);"      // GL_EXT_texture_array
-                "vec4 texture2DArray(sampler2DArray, vec3);"      // GL_EXT_texture_array
                 "vec4 shadow1DArray(sampler1DArrayShadow, vec3);" // GL_EXT_texture_array
                 "vec4 shadow2DArray(sampler2DArrayShadow, vec4);" // GL_EXT_texture_array
 
@@ -2651,6 +2652,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 texture3DProjLod(sampler3D, vec4, float);"     // GL_ARB_shader_texture_lod  // OES_texture_3D, but caught by keyword check
                 "vec4 textureCubeLod(samplerCube, vec3, float);"     // GL_ARB_shader_texture_lod
 
+                "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
+
                 "\n");
         }
     }
@@ -2687,7 +2690,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 shadow2DRectProjGradARB(sampler2DRectShadow, vec4, vec2, vec2);" // GL_ARB_shader_texture_lod
 
                 "vec4 texture1DArrayLod(sampler1DArray, vec2, float);"                 // GL_EXT_texture_array
-                "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"                 // GL_EXT_texture_array
                 "vec4 shadow1DArrayLod(sampler1DArrayShadow, vec3, float);"            // GL_EXT_texture_array
                 "vec4 shadow2DArrayLod(sampler2DArrayShadow, vec4, float);"            // GL_EXT_texture_array
 
@@ -2762,6 +2764,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "vec4 texture3D(sampler3D, vec3, float);"        // OES_texture_3D
             "vec4 texture3DProj(sampler3D, vec4, float);"    // OES_texture_3D
             "vec4 textureCube(samplerCube, vec3, float);"
+            "vec4 texture2DArray(sampler2DArray, vec3, float);" // GL_EXT_texture_array
 
             "\n");
     }
@@ -2775,7 +2778,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "vec4 shadow1DProj(sampler1DShadow, vec4, float);"
             "vec4 shadow2DProj(sampler2DShadow, vec4, float);"
             "vec4 texture1DArray(sampler1DArray, vec2, float);"      // GL_EXT_texture_array
-            "vec4 texture2DArray(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
             "vec4 shadow1DArray(sampler1DArrayShadow, vec3, float);" // GL_EXT_texture_array
             "vec4 shadow2DArray(sampler2DArrayShadow, vec4, float);" // GL_EXT_texture_array
             "\n");
@@ -5229,6 +5231,9 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         }
 
 		// E_GL_EXT_texture_array
+        if (spvVersion.spv == 0) {
+            symbolTable.setFunctionExtensions("texture2DArray",    1, &E_GL_EXT_texture_array);
+        }
         if (profile != EEsProfile && spvVersion.spv == 0) {
             int nLodExtensions = 2;
             const char *lodExtensions[] = {E_GL_EXT_texture_array, E_GL_ARB_shader_texture_lod};
@@ -5237,7 +5242,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 nLodExtensions = 1;
 
             symbolTable.setFunctionExtensions("texture1DArray",    1, &E_GL_EXT_texture_array);
-            symbolTable.setFunctionExtensions("texture2DArray",    1, &E_GL_EXT_texture_array);
             symbolTable.setFunctionExtensions("shadow1DArray",     1, &E_GL_EXT_texture_array);
             symbolTable.setFunctionExtensions("shadow2DArray",     1, &E_GL_EXT_texture_array);
 
