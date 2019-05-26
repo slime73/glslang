@@ -124,6 +124,8 @@ const char* AddressingString(int addr)
     case 1:  return "Physical32";
     case 2:  return "Physical64";
 
+    case AddressingModelPhysicalStorageBuffer64EXT: return "PhysicalStorageBuffer64EXT";
+
     default: return "Bad";
     }
 }
@@ -220,6 +222,8 @@ const char* StorageClassString(int StorageClass)
     case StorageClassIncomingCallableDataNV:  return "IncomingCallableDataNV";
 #endif
 
+    case StorageClassPhysicalStorageBufferEXT: return "PhysicalStorageBufferEXT";
+
     default: return "Bad";
     }
 }
@@ -295,6 +299,8 @@ const char* DecorationString(int decoration)
     case DecorationNonUniformEXT:           return "DecorationNonUniformEXT";
     case DecorationHlslCounterBufferGOOGLE: return "DecorationHlslCounterBufferGOOGLE";
     case DecorationHlslSemanticGOOGLE:      return "DecorationHlslSemanticGOOGLE";
+    case DecorationRestrictPointerEXT:      return "DecorationRestrictPointerEXT";
+    case DecorationAliasedPointerEXT:       return "DecorationAliasedPointerEXT";
     }
 }
 
@@ -569,7 +575,7 @@ const char* ImageChannelDataTypeString(int type)
     }
 }
 
-const int ImageOperandsCeiling = 12;
+const int ImageOperandsCeiling = 14;
 
 const char* ImageOperandsString(int format)
 {
@@ -586,6 +592,8 @@ const char* ImageOperandsString(int format)
     case ImageOperandsMakeTexelVisibleKHRShift:     return "MakeTexelVisibleKHR";
     case ImageOperandsNonPrivateTexelKHRShift:      return "NonPrivateTexelKHR";
     case ImageOperandsVolatileTexelKHRShift:        return "VolatileTexelKHR";
+    case ImageOperandsSignExtendShift:              return "SignExtend";
+    case ImageOperandsZeroExtendShift:              return "ZeroExtend";
 
     case ImageOperandsCeiling:
     default:
@@ -668,15 +676,20 @@ const char* SelectControlString(int cont)
     }
 }
 
-const int LoopControlCeiling = 4;
+const int LoopControlCeiling = LoopControlPartialCountShift + 1;
 
 const char* LoopControlString(int cont)
 {
     switch (cont) {
-    case 0:  return "Unroll";
-    case 1:  return "DontUnroll";
-    case 2:  return "DependencyInfinite";
-    case 3:  return "DependencyLength";
+    case LoopControlUnrollShift:             return "Unroll";
+    case LoopControlDontUnrollShift:         return "DontUnroll";
+    case LoopControlDependencyInfiniteShift: return "DependencyInfinite";
+    case LoopControlDependencyLengthShift:   return "DependencyLength";
+    case LoopControlMinIterationsShift:      return "MinIterations";
+    case LoopControlMaxIterationsShift:      return "MaxIterations";
+    case LoopControlIterationMultipleShift:  return "IterationMultiple";
+    case LoopControlPeelCountShift:          return "PeelCount";
+    case LoopControlPartialCountShift:       return "PartialCount";
 
     case LoopControlCeiling:
     default: return "Bad";
@@ -922,6 +935,12 @@ const char* CapabilityString(int info)
     case CapabilityVulkanMemoryModelKHR:                return "CapabilityVulkanMemoryModelKHR";
     case CapabilityVulkanMemoryModelDeviceScopeKHR:     return "CapabilityVulkanMemoryModelDeviceScopeKHR";
 
+    case CapabilityPhysicalStorageBufferAddressesEXT:   return "CapabilityPhysicalStorageBufferAddressesEXT";
+
+    case CapabilityVariablePointers:                    return "CapabilityVariablePointers";
+
+    case CapabilityCooperativeMatrixNV:     return "CapabilityCooperativeMatrixNV";
+
     default: return "Bad";
     }
 }
@@ -1014,6 +1033,7 @@ const char* OpcodeString(int op)
     case 82:  return "OpCompositeInsert";
     case 83:  return "OpCopyObject";
     case 84:  return "OpTranspose";
+    case OpCopyLogical: return "OpCopyLogical";
     case 85:  return "Bad";
     case 86:  return "OpSampledImage";
     case 87:  return "OpImageSampleImplicitLod";
@@ -1325,6 +1345,12 @@ const char* OpcodeString(int op)
     case OpWritePackedPrimitiveIndices4x8NV: return "OpWritePackedPrimitiveIndices4x8NV";
 #endif
 
+    case OpTypeCooperativeMatrixNV:         return "OpTypeCooperativeMatrixNV";
+    case OpCooperativeMatrixLoadNV:         return "OpCooperativeMatrixLoadNV";
+    case OpCooperativeMatrixStoreNV:        return "OpCooperativeMatrixStoreNV";
+    case OpCooperativeMatrixMulAddNV:       return "OpCooperativeMatrixMulAddNV";
+    case OpCooperativeMatrixLengthNV:       return "OpCooperativeMatrixLengthNV";
+
     default:
         return "Bad";
     }
@@ -1436,6 +1462,8 @@ void Parameterize()
     InstructionDesc[OpGroupWaitEvents].setResultAndType(false, false);
     InstructionDesc[OpAtomicFlagClear].setResultAndType(false, false);
     InstructionDesc[OpModuleProcessed].setResultAndType(false, false);
+    InstructionDesc[OpTypeCooperativeMatrixNV].setResultAndType(true, false);
+    InstructionDesc[OpCooperativeMatrixStoreNV].setResultAndType(false, false);
 
     // Specific additional context-dependent operands
 
@@ -1912,6 +1940,8 @@ void Parameterize()
     InstructionDesc[OpQuantizeToF16].operands.push(OperandId, "'Value'");
 
     InstructionDesc[OpTranspose].operands.push(OperandId, "'Matrix'");
+
+    InstructionDesc[OpCopyLogical].operands.push(OperandId, "'Operand'");
 
     InstructionDesc[OpIsNan].operands.push(OperandId, "'x'");
 
@@ -2706,6 +2736,32 @@ void Parameterize()
     InstructionDesc[OpWritePackedPrimitiveIndices4x8NV].operands.push(OperandId, "'Index Offset'");
     InstructionDesc[OpWritePackedPrimitiveIndices4x8NV].operands.push(OperandId, "'Packed Indices'");
 #endif
+
+    InstructionDesc[OpTypeCooperativeMatrixNV].operands.push(OperandId, "'Component Type'");
+    InstructionDesc[OpTypeCooperativeMatrixNV].operands.push(OperandId, "'Scope'");
+    InstructionDesc[OpTypeCooperativeMatrixNV].operands.push(OperandId, "'Rows'");
+    InstructionDesc[OpTypeCooperativeMatrixNV].operands.push(OperandId, "'Columns'");
+
+    InstructionDesc[OpCooperativeMatrixLoadNV].operands.push(OperandId, "'Pointer'");
+    InstructionDesc[OpCooperativeMatrixLoadNV].operands.push(OperandId, "'Stride'");
+    InstructionDesc[OpCooperativeMatrixLoadNV].operands.push(OperandId, "'Column Major'");
+    InstructionDesc[OpCooperativeMatrixLoadNV].operands.push(OperandMemoryAccess, "'Memory Access'");
+    InstructionDesc[OpCooperativeMatrixLoadNV].operands.push(OperandLiteralNumber, "", true);
+    InstructionDesc[OpCooperativeMatrixLoadNV].operands.push(OperandId, "", true);
+
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandId, "'Pointer'");
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandId, "'Object'");
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandId, "'Stride'");
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandId, "'Column Major'");
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandMemoryAccess, "'Memory Access'");
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandLiteralNumber, "", true);
+    InstructionDesc[OpCooperativeMatrixStoreNV].operands.push(OperandId, "", true);
+
+    InstructionDesc[OpCooperativeMatrixMulAddNV].operands.push(OperandId, "'A'");
+    InstructionDesc[OpCooperativeMatrixMulAddNV].operands.push(OperandId, "'B'");
+    InstructionDesc[OpCooperativeMatrixMulAddNV].operands.push(OperandId, "'C'");
+
+    InstructionDesc[OpCooperativeMatrixLengthNV].operands.push(OperandId, "'Type'");
 }
 
 }; // end spv namespace
