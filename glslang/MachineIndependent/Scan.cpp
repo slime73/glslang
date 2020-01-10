@@ -1391,7 +1391,6 @@ int TScanContext::tokenizeIdentifier()
 #ifndef GLSLANG_WEB
     case ISAMPLER1D:
     case ISAMPLER1DARRAY:
-    case SAMPLER1DARRAYSHADOW:
     case USAMPLER1D:
     case USAMPLER1DARRAY:
         afterType = true;
@@ -1451,7 +1450,7 @@ int TScanContext::tokenizeIdentifier()
         afterType = true;
         if (parseContext.symbolTable.atBuiltInLevel())
             return keyword;
-        else if (parseContext.version < 130 && ((parseContext.profile == EEsProfile && keyword != SAMPLER2DARRAY) || !parseContext.extensionTurnedOn(E_GL_EXT_texture_array))) {
+        else if (parseContext.version < 130 && ((parseContext.isEsProfile() && keyword != SAMPLER2DARRAY) || !parseContext.extensionsTurnedOn(1, &E_GL_EXT_texture_array))) {
             if (parseContext.forwardCompatible)
                 parseContext.warn(loc, "using future keyword", tokenText, "");
 
@@ -1473,12 +1472,20 @@ int TScanContext::tokenizeIdentifier()
         return keyword;
 
     case SAMPLER1DARRAY:
+	case SAMPLER1DARRAYSHADOW:
         afterType = true;
-        if (parseContext.isEsProfile() && parseContext.version == 300)
-            reservedWord();
-        else if ((parseContext.isEsProfile() && parseContext.version < 300) ||
-                 (!parseContext.isEsProfile() && parseContext.version < 130))
-            return identifierOrType();
+		if (parseContext.symbolTable.atBuiltInLevel())
+            return keyword;
+		if (parseContext.isEsProfile()) {
+			if (parseContext.version >= 300)
+				reservedWord();
+			else
+				return identifierOrType();
+		} else if (parseContext.version < 130 && !parseContext.extensionsTurnedOn(1, &E_GL_EXT_texture_array)) {
+			if (parseContext.forwardCompatible)
+				parseContext.warn(loc, "using future keyword", tokenText, "");
+			return identifierOrType();
+		}
         return keyword;
 
     case SAMPLEREXTERNALOES:
