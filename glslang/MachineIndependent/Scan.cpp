@@ -1328,13 +1328,6 @@ int TScanContext::tokenizeIdentifier()
             reservedWord();
         return keyword;
 
-    case ISAMPLER1D:
-    case ISAMPLER1DARRAY:
-    case USAMPLER1D:
-    case USAMPLER1DARRAY:
-        afterType = true;
-        return es30ReservedFromGLSL(130);
-
     case TEXTURECUBEARRAY:
     case ITEXTURECUBEARRAY:
     case UTEXTURECUBEARRAY:
@@ -1342,6 +1335,7 @@ int TScanContext::tokenizeIdentifier()
             return keyword;
         else
             return identifierOrType();
+#endif
 
     case UINT:
     case UVEC2:
@@ -1450,40 +1444,6 @@ int TScanContext::tokenizeIdentifier()
         afterType = true;
         if (parseContext.isEsProfile())
             reservedWord();
-        return keyword;
-
-    case SAMPLER3D:
-        afterType = true;
-        if (parseContext.profile == EEsProfile && parseContext.version < 300) {
-            if (!parseContext.extensionTurnedOn(E_GL_OES_texture_3D))
-                reservedWord();
-        }
-        return keyword;
-
-    case SAMPLER2DSHADOW:
-        afterType = true;
-        if (parseContext.profile == EEsProfile && parseContext.version < 300) {
-            if (!parseContext.extensionTurnedOn(E_GL_EXT_shadow_samplers))
-                reservedWord();
-        }
-        return keyword;
-
-    case SAMPLER1DARRAY:
-    case SAMPLER1DARRAYSHADOW:
-        afterType = true;
-        if (parseContext.symbolTable.atBuiltInLevel())
-            return keyword;
-        else if (parseContext.profile == EEsProfile) {
-            if (parseContext.version >= 300)
-                reservedWord();
-            else
-                return identifierOrType();
-        } else if (parseContext.version < 130 && !parseContext.extensionTurnedOn(E_GL_EXT_texture_array)) {
-            if (parseContext.forwardCompatible)
-                parseContext.warn(loc, "using future keyword", tokenText, "");
-
-            return identifierOrType();
-        }
         return keyword;
 
     case SAMPLER2DARRAY:
