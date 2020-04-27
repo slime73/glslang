@@ -1,6 +1,7 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2013-2016 LunarG, Inc.
+// Copyright (C) 2016-2020 Google, Inc.
 //
 // All rights reserved.
 //
@@ -241,6 +242,7 @@ protected:
     std::string text;  // contents of preamble
 };
 
+// Track the user's #define and #undef from the command line.
 TPreamble UserPreamble;
 
 //
@@ -257,12 +259,12 @@ const char* GetBinaryName(EShLanguage stage)
         case EShLangGeometry:        name = "geom.spv";    break;
         case EShLangFragment:        name = "frag.spv";    break;
         case EShLangCompute:         name = "comp.spv";    break;
-        case EShLangRayGenNV:        name = "rgen.spv";    break;
-        case EShLangIntersectNV:     name = "rint.spv";    break;
-        case EShLangAnyHitNV:        name = "rahit.spv";   break;
-        case EShLangClosestHitNV:    name = "rchit.spv";   break;
-        case EShLangMissNV:          name = "rmiss.spv";   break;
-        case EShLangCallableNV:      name = "rcall.spv";   break;
+        case EShLangRayGen:          name = "rgen.spv";    break;
+        case EShLangIntersect:       name = "rint.spv";    break;
+        case EShLangAnyHit:          name = "rahit.spv";   break;
+        case EShLangClosestHit:      name = "rchit.spv";   break;
+        case EShLangMiss:            name = "rmiss.spv";   break;
+        case EShLangCallable:        name = "rcall.spv";   break;
         case EShLangMeshNV:          name = "mesh.spv";    break;
         case EShLangTaskNV:          name = "task.spv";    break;
         default:                     name = "unknown";     break;
@@ -608,6 +610,9 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                             } else if (strcmp(argv[1], "vulkan1.1") == 0) {
                                 setVulkanSpv();
                                 ClientVersion = glslang::EShTargetVulkan_1_1;
+                            } else if (strcmp(argv[1], "vulkan1.2") == 0) {
+                                setVulkanSpv();
+                                ClientVersion = glslang::EShTargetVulkan_1_2;
                             } else if (strcmp(argv[1], "opengl") == 0) {
                                 setOpenGlSpv();
                                 ClientVersion = glslang::EShTargetOpenGL_450;
@@ -630,7 +635,7 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                                 TargetLanguage = glslang::EShTargetSpv;
                                 TargetVersion = glslang::EShTargetSpv_1_5;
                             } else
-                                Error("--target-env expected one of: vulkan1.0, vulkan1.1, opengl,\n"
+                                Error("--target-env expected one of: vulkan1.0, vulkan1.1, vulkan1.2, opengl,\n"
                                       "spirv1.0, spirv1.1, spirv1.2, spirv1.3, spirv1.4, or spirv1.5");
                         }
                         bumpArg();
@@ -651,6 +656,9 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         break;
                     } else if (lowerword == "version") {
                         Options |= EOptionDumpVersions;
+                    } else if (lowerword == "help") {
+                        usage();
+                        break;
                     } else {
                         Error("unrecognized command-line option", argv[0]);
                     }
@@ -824,6 +832,10 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
         case glslang::EShTargetVulkan_1_1:
             TargetLanguage = glslang::EShTargetSpv;
             TargetVersion = glslang::EShTargetSpv_1_3;
+            break;
+        case glslang::EShTargetVulkan_1_2:
+            TargetLanguage = glslang::EShTargetSpv;
+            TargetVersion = glslang::EShTargetSpv_1_5;
             break;
         case glslang::EShTargetOpenGL_450:
             TargetLanguage = glslang::EShTargetSpv;
@@ -1128,7 +1140,6 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
             for (int stage = 0; stage < EShLangCount; ++stage) {
                 if (program.getIntermediate((EShLanguage)stage)) {
                     std::vector<unsigned int> spirv;
-                    std::string warningsErrors;
                     spv::SpvBuildLogger logger;
                     glslang::SpvOptions spvOptions;
                     if (Options & EOptionDebug)
@@ -1418,17 +1429,17 @@ EShLanguage FindLanguage(const std::string& name, bool parseStageName)
     else if (stageName == "comp")
         return EShLangCompute;
     else if (stageName == "rgen")
-        return EShLangRayGenNV;
+        return EShLangRayGen;
     else if (stageName == "rint")
-        return EShLangIntersectNV;
+        return EShLangIntersect;
     else if (stageName == "rahit")
-        return EShLangAnyHitNV;
+        return EShLangAnyHit;
     else if (stageName == "rchit")
-        return EShLangClosestHitNV;
+        return EShLangClosestHit;
     else if (stageName == "rmiss")
-        return EShLangMissNV;
+        return EShLangMiss;
     else if (stageName == "rcall")
-        return EShLangCallableNV;
+        return EShLangCallable;
     else if (stageName == "mesh")
         return EShLangMeshNV;
     else if (stageName == "task")
@@ -1640,16 +1651,17 @@ void usage()
            "  --sep                             synonym for --source-entrypoint\n"
            "  --stdin                           read from stdin instead of from a file;\n"
            "                                    requires providing the shader stage using -S\n"
-           "  --target-env {vulkan1.0 | vulkan1.1 | opengl | \n"
+           "  --target-env {vulkan1.0 | vulkan1.1 | vulkan1.2 | opengl | \n"
            "                spirv1.0 | spirv1.1 | spirv1.2 | spirv1.3 | spirv1.4 | spirv1.5}\n"
-           "                                    set execution environment that emitted code\n"
-           "                                    will execute in (versus source language\n"
-           "                                    semantics selected by --client) defaults:\n"
-           "                                     * 'vulkan1.0' under '--client vulkan<ver>'\n"
-           "                                     * 'opengl' under '--client opengl<ver>'\n"
-           "                                     * 'spirv1.0' under --target-env vulkan1.0\n"
-           "                                     * 'spirv1.3' under --target-env vulkan1.1\n"
-           "                                    multiple --targen-env can be specified.\n"
+           "                                    Set the execution environment that the\n"
+           "                                    generated code will be executed in.\n"
+           "                                    Defaults to:\n"
+           "                                     * vulkan1.0 under --client vulkan<ver>\n"
+           "                                     * opengl    under --client opengl<ver>\n"
+           "                                     * spirv1.0  under --target-env vulkan1.0\n"
+           "                                     * spirv1.3  under --target-env vulkan1.1\n"
+           "                                     * spirv1.5  under --target-env vulkan1.2\n"
+           "                                    Multiple --target-env can be specified.\n"
            "  --variable-name <name>\n"
            "  --vn <name>                       creates a C header file that contains a\n"
            "                                    uint32_t array named <name>\n"
