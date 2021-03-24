@@ -53,7 +53,9 @@ if(BUILD_TESTING)
             ${CMAKE_CURRENT_SOURCE_DIR}/Link.FromFile.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/Link.FromFile.Vk.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/Pp.FromFile.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/Spv.FromFile.cpp)
+            ${CMAKE_CURRENT_SOURCE_DIR}/Spv.FromFile.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/VkRelaxed.FromFile.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/GlslMapIO.FromFile.cpp)
 
         if(ENABLE_SPVREMAPPER)
             set(TEST_SOURCES ${TEST_SOURCES}
@@ -82,6 +84,12 @@ if(BUILD_TESTING)
                                    ${PROJECT_SOURCE_DIR}
                                    ${gmock_SOURCE_DIR}/include
                                    ${gtest_SOURCE_DIR}/include)
+
+        if(ENABLE_OPT)
+            target_include_directories(glslangtests
+                PRIVATE ${spirv-tools_SOURCE_DIR}/include
+            )
+        endif(ENABLE_OPT)
 
         set(LIBRARIES
             glslang OSDependent OGLCompiler glslang
