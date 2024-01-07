@@ -405,6 +405,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_shader_texture_lod 1\n"
             "#define GL_EXT_shadow_samplers 1\n"
             "#define GL_EXT_fragment_shading_rate 1\n"
+            "#define GL_EXT_texture_array 1\n"
 
             // AEP
             "#define GL_ANDROID_extension_pack_es31a 1\n"
