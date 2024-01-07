@@ -58,9 +58,9 @@
 namespace glslang {
 
 // TODO: ARB_Compatability: do full extension support
-const bool ARBCompatibility = true;
+const bool ARBCompatibility = false;
 
-const bool ForwardCompatibility = false;
+const bool ForwardCompatibility = true;
 
 namespace {
 
