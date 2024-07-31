@@ -138,7 +138,7 @@ static bool isSameSymbol(TIntermSymbol* symbol1, EShLanguage stage1, TIntermSymb
 //
 // do error checking on the shader boundary in / out vars
 //
-void TIntermediate::checkStageIO(TInfoSink& infoSink, TIntermediate& unit) {
+void TIntermediate::checkStageIO(EShMessages messages, TInfoSink& infoSink, TIntermediate& unit) {
     if (unit.treeRoot == nullptr || treeRoot == nullptr)
         return;
 
@@ -162,7 +162,7 @@ void TIntermediate::checkStageIO(TInfoSink& infoSink, TIntermediate& unit) {
     // Check that all of our inputs have matching outputs from the previous stage.
     // Only do this for Vulkan, since GL_ARB_separate_shader_objects allows for
     // the in/out to not match
-    if (spvVersion.vulkan > 0) {
+    if (spvVersion.vulkan > 0 || (messages & EshMsgCrossStageIO)) {
         for (auto& nextStageInterm : unitLinkerObjects) {
             auto* nextStageSymbol = nextStageInterm->getAsSymbolNode();
             bool found = false;

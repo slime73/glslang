@@ -272,6 +272,7 @@ enum EShMessages : unsigned {
     EShMsgEnhanced             = (1 << 15), // enhanced message readability
     EShMsgAbsolutePath         = (1 << 16), // Output Absolute path for messages
     EShMsgDisplayErrorColumn   = (1 << 17), // Display error message column aswell as line
+    EshMsgCrossStageIO         = (1 << 30), // Always validate cross-stage IO
     LAST_ELEMENT_MARKER(EShMsgCount),
 };
 
