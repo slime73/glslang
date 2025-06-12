@@ -37,7 +37,7 @@
 #include <sstream>
 #include <cctype>
 
-#include "glslang/Public/ResourceLimits.h"
+#include "../../glslang/Public/ResourceLimits.h"
 
 TBuiltInResource Resources;
 

@@ -48,8 +48,8 @@
 #include "spirv-tools/libspirv.h"
 #endif
 
-#include "glslang/MachineIndependent/Versions.h"
-#include "glslang/Include/visibility.h"
+#include "../glslang/MachineIndependent/Versions.h"
+#include "../glslang/Include/visibility.h"
 #include "GlslangToSpv.h"
 #include "Logger.h"
 
