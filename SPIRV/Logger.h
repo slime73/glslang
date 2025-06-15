@@ -37,7 +37,7 @@
 
 #include <string>
 #include <vector>
-#include "glslang/Include/visibility.h"
+#include "../glslang/Include/visibility.h"
 
 namespace spv {
 

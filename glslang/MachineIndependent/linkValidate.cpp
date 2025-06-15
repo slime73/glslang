@@ -46,7 +46,7 @@
 // even if no merging was done (i.e., the stage was only one compilation unit).
 //
 
-#include "glslang/Public/ShaderLang.h"
+#include "../../glslang/Public/ShaderLang.h"
 #include "localintermediate.h"
 #include "../Include/InfoSink.h"
 #include "SymbolTable.h"

@@ -39,7 +39,7 @@
 #include <vector>
 
 #include "Logger.h"
-#include "glslang/Include/visibility.h"
+#include "../glslang/Include/visibility.h"
 
 namespace glslang {
 class TIntermediate;
