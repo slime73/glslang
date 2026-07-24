@@ -43,7 +43,7 @@
 #include <unordered_set>
 #include <algorithm>
 
-#include "SPIRV/spvIR.h"
+#include "../SPIRV/spvIR.h"
 #include "SpvBuilder.h"
 #include "spirv.hpp11"
 #include "spvUtil.h"
